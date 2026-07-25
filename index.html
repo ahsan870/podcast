@@ -14,16 +14,22 @@
   }
   *{margin:0;padding:0;box-sizing:border-box;} html{scroll-behavior:smooth;}
   body{background:var(--bg);color:var(--ink);font-family:'Lora',serif;font-size:15px;line-height:1.75;}
-  .toc{position:fixed;top:0;left:0;width:220px;height:100vh;background:var(--ink);padding:1.4rem 1rem;overflow-y:auto;z-index:100;}
-  .toc-logo{font-family:'JetBrains Mono',monospace;font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;padding-bottom:0.7rem;border-bottom:1px solid #2e2820;}
-  .toc-name{font-family:'Syne',sans-serif;font-size:0.9rem;font-weight:700;color:#f0e8da;line-height:1.2;}
-  .toc-co{font-family:'JetBrains Mono',monospace;font-size:0.52rem;color:#4a4030;margin-bottom:1rem;}
-  .toc-tr{display:flex;align-items:center;gap:0.5rem;margin-bottom:0.35rem;font-family:'JetBrains Mono',monospace;font-size:0.5rem;color:#5a5040;}
+  .toc{position:fixed;top:0;left:0;width:220px;height:100vh;background:var(--white);border-right:1px solid var(--border);padding:1.4rem 1rem;overflow-y:auto;overflow-x:hidden;z-index:100;transition:width 0.22s ease,padding 0.22s ease,opacity 0.18s ease;}
+  .toc.collapsed{width:0;padding-left:0;padding-right:0;opacity:0;pointer-events:none;border-right:none;}
+  .toc-logo{font-family:'JetBrains Mono',monospace;font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;padding-bottom:0.7rem;border-bottom:1px solid var(--border);white-space:nowrap;}
+  .toc-name{font-family:'Syne',sans-serif;font-size:0.9rem;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap;}
+  .toc-co{font-family:'JetBrains Mono',monospace;font-size:0.52rem;color:var(--muted);margin-bottom:1rem;white-space:nowrap;}
+  .toc-tr{display:flex;align-items:center;gap:0.5rem;margin-bottom:0.35rem;font-family:'JetBrains Mono',monospace;font-size:0.5rem;color:var(--ink2);white-space:nowrap;}
   .toc-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-  .toc-sec{font-family:'JetBrains Mono',monospace;font-size:0.45rem;letter-spacing:0.2em;color:#2e2820;text-transform:uppercase;padding:0.6rem 0.4rem 0.15rem;}
-  .toc a{display:block;padding:0.28rem 0.5rem;font-family:'Syne',sans-serif;font-size:0.58rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:#6a6050;text-decoration:none;border-left:2px solid transparent;transition:all 0.15s;}
-  .toc a:hover{color:#f0e8da;border-left-color:var(--gold);padding-left:0.9rem;}
-  .main{margin-left:220px;}
+  .toc-sec{font-family:'JetBrains Mono',monospace;font-size:0.45rem;letter-spacing:0.2em;color:var(--muted);text-transform:uppercase;padding:0.6rem 0.4rem 0.15rem;white-space:nowrap;}
+  .toc a{display:block;padding:0.28rem 0.5rem;font-family:'Syne',sans-serif;font-size:0.58rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink2);text-decoration:none;border-left:2px solid transparent;transition:all 0.15s;white-space:nowrap;}
+  .toc a:hover{color:var(--blue);border-left-color:var(--gold);padding-left:0.9rem;background:var(--bg2);}
+  .main{margin-left:220px;transition:margin-left 0.22s ease;}
+  .main.collapsed{margin-left:0;}
+  .toc-toggle{position:fixed;top:1.2rem;left:220px;z-index:110;width:26px;height:26px;background:var(--white);color:var(--ink2);border:1px solid var(--border);border-left:none;border-radius:0 4px 4px 0;cursor:pointer;font-size:0.7rem;line-height:1;display:flex;align-items:center;justify-content:center;transition:left 0.22s ease;}
+  .toc-toggle:hover{color:var(--gold);}
+  .toc-toggle.collapsed{left:0;border-left:1px solid var(--border);border-radius:0 4px 4px 0;}
+  @media(max-width:900px){.toc-toggle{display:none;}}
   .hero{background:var(--ink);color:#f0e8da;padding:3.5rem 3rem 2.5rem;position:relative;}
   .hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--ta) 33%,var(--tb) 33% 66%,var(--tc) 66%);}
   .hero-tag{font-family:'JetBrains Mono',monospace;font-size:0.55rem;letter-spacing:0.3em;color:var(--gold);text-transform:uppercase;margin-bottom:1rem;}
@@ -115,7 +121,8 @@
 </style>
 </head>
 <body>
-<nav class="toc">
+<button class="toc-toggle" id="tocToggle" aria-label="Toggle sidebar" title="Toggle sidebar">‹</button>
+<nav class="toc" id="tocNav">
   <div class="toc-logo">🎙 Podcast Script · Full</div>
   <div class="toc-name">Ahsan Ahmed</div>
   <div class="toc-co">Charter Communications · Sr. Engineer · Georgia Tech</div>
@@ -144,7 +151,7 @@
   <div class="toc-sec">📋 Quick Index</div>
   <a href="#qindex">All 75 Questions</a>
 </nav>
-<div class="main">
+<div class="main" id="mainEl">
 <div class="hero">
   <div class="hero-tag">🎙 Full Podcast Script — All 75 Questions Included · Version 5</div>
   <h1>Ahsan Ahmed<br><span>From Dhaka to the Cloud</span></h1>
@@ -568,6 +575,28 @@
       runSearch();
     }
   });
+})();
+
+(function(){
+  var toc = document.getElementById('tocNav');
+  var main = document.getElementById('mainEl');
+  var toggle = document.getElementById('tocToggle');
+  var STORAGE_KEY = 'toc-collapsed';
+
+  function setCollapsed(collapsed){
+    toc.classList.toggle('collapsed', collapsed);
+    main.classList.toggle('collapsed', collapsed);
+    toggle.classList.toggle('collapsed', collapsed);
+    toggle.textContent = collapsed ? '›' : '‹';
+    toggle.setAttribute('aria-expanded', String(!collapsed));
+    localStorage.setItem(STORAGE_KEY, collapsed ? '1' : '0');
+  }
+
+  toggle.addEventListener('click', function(){
+    setCollapsed(!toc.classList.contains('collapsed'));
+  });
+
+  setCollapsed(localStorage.getItem(STORAGE_KEY) === '1');
 })();
 </script>
 </div></div></body></html>
