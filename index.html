@@ -93,6 +93,16 @@
   .tip-txt{font-family:'Lora',serif;font-size:0.82rem;color:#6a6050;line-height:1.65;}
   .tip-txt strong{color:#e8e0d0;}
 
+  .search-bar{position:sticky;top:0;z-index:50;background:var(--ink);padding:0.8rem 3rem;display:flex;align-items:center;gap:0.7rem;border-bottom:2px solid var(--gold);}
+  .search-bar input{flex:1;background:#211c15;border:1px solid #3a3020;color:#f0e8da;font-family:'Lora',serif;font-size:0.85rem;padding:0.55rem 0.9rem;border-radius:3px;outline:none;}
+  .search-bar input::placeholder{color:#6a6050;}
+  .search-bar input:focus{border-color:var(--gold);}
+  .search-count{font-family:'JetBrains Mono',monospace;font-size:0.55rem;letter-spacing:0.08em;color:var(--gold);text-transform:uppercase;white-space:nowrap;}
+  .search-clear{font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:#8a7f74;background:none;border:1px solid #3a3020;padding:0.4rem 0.6rem;border-radius:3px;cursor:pointer;display:none;}
+  .search-clear:hover{color:#f0e8da;border-color:var(--gold);}
+  .no-results{display:none;padding:2.5rem 1rem;text-align:center;font-family:'Lora',serif;font-style:italic;color:var(--muted);}
+  @media(max-width:900px){.search-bar{padding:0.7rem 1.2rem;}}
+
   .qa:target {
     animation: highlight 1.8s ease;
   }
@@ -147,7 +157,13 @@
     <span class="tb2 tall">14 Sections · 75 Questions · All Killer Lines</span>
   </div>
 </div>
+<div class="search-bar">
+  <input type="text" id="searchInput" placeholder="🔍 Search questions, answers, killer lines…" autocomplete="off">
+  <span class="search-count" id="searchCount"></span>
+  <button class="search-clear" id="searchClear">✕ Clear</button>
+</div>
 <div class="content">
+<div class="no-results" id="noResults">No questions match your search. Try a different keyword.</div>
 <div class="track-frame">
   <div class="tf-head"><div class="tf-title">🗺 The Three Audience Tracks — Set This Up Early in the Show</div></div>
   <div class="tf-grid">
@@ -493,4 +509,65 @@
     <div class="tip"><div class="tip-ico">🌐</div><div class="tip-txt"><strong>Ground everything in Charter Communications.</strong> "At Charter, when we handle 32 million customers..." — real company, real scale. It turns every point from opinion into evidence.</div></div>
   </div>
 </div>
+<script>
+(function(){
+  var input = document.getElementById('searchInput');
+  var clearBtn = document.getElementById('searchClear');
+  var countEl = document.getElementById('searchCount');
+  var noResults = document.getElementById('noResults');
+  var qaEls = Array.prototype.slice.call(document.querySelectorAll('.qa'));
+  var phEls = Array.prototype.slice.call(document.querySelectorAll('.ph'));
+  var qaText = qaEls.map(function(el){ return el.textContent.toLowerCase(); });
+
+  function updatePhVisibility(){
+    var ordered = Array.prototype.slice.call(document.querySelectorAll('.ph, .qa'));
+    var currentPh = null, currentHasVisible = false;
+    function flush(){ if(currentPh) currentPh.style.display = currentHasVisible ? '' : 'none'; }
+    ordered.forEach(function(el){
+      if(el.classList.contains('ph')){
+        flush();
+        currentPh = el;
+        currentHasVisible = false;
+      } else {
+        if(el.style.display !== 'none') currentHasVisible = true;
+      }
+    });
+    flush();
+  }
+
+  function runSearch(){
+    var term = input.value.trim().toLowerCase();
+    clearBtn.style.display = term ? 'inline-block' : 'none';
+    if(!term){
+      qaEls.forEach(function(el){ el.style.display = ''; });
+      phEls.forEach(function(el){ el.style.display = ''; });
+      noResults.style.display = 'none';
+      countEl.textContent = '';
+      return;
+    }
+    var visibleCount = 0;
+    qaEls.forEach(function(el, i){
+      var match = qaText[i].indexOf(term) !== -1;
+      el.style.display = match ? '' : 'none';
+      if(match) visibleCount++;
+    });
+    updatePhVisibility();
+    noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+    countEl.textContent = visibleCount + (visibleCount === 1 ? ' match' : ' matches');
+  }
+
+  input.addEventListener('input', runSearch);
+  clearBtn.addEventListener('click', function(){
+    input.value = '';
+    runSearch();
+    input.focus();
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && document.activeElement === input){
+      input.value = '';
+      runSearch();
+    }
+  });
+})();
+</script>
 </div></div></body></html>
